@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from './axiosConfig';
 
 function LoginPage({ setIsAuthenticated }) {
   const [username, setUsername] = useState('');
@@ -8,7 +8,7 @@ function LoginPage({ setIsAuthenticated }) {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('https://hanabi-2.onrender.com/login', {}, {
+      const response = await axiosInstance.post('/login', {}, {
         headers: {
           'Authorization': 'Basic ' + btoa(`${username}:${password}`),
         },
