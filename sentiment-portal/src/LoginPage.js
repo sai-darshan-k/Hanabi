@@ -8,7 +8,7 @@ function LoginPage({ setIsAuthenticated }) {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/login', {}, {
+      const response = await axios.post('https://hanabi-2.onrender.com/login', {}, {
         headers: {
           'Authorization': 'Basic ' + btoa(`${username}:${password}`),
         },
