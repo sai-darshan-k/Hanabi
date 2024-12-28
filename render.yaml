@@ -12,4 +12,5 @@ services:
     name: react-frontend
     env: static
     buildCommand: cd sentiment-portal && npm install && npm run build
-    staticPublishPath: frontend/build
+    startCommand: serve -s build
+    staticPublishPath: sentiment-portal/build
