@@ -5,6 +5,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import io
+from starlette.requests import Request
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -14,10 +15,10 @@ app = FastAPI()
 # Middleware for CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust for specific domains in production
+    allow_origins=["*"],  # Allow all origins, change to specific domains in production
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
 
 # Authentication
@@ -30,6 +31,13 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
 
 # Sentiment Analysis Model
 analyzer = SentimentIntensityAnalyzer()
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """ Log request method and path for debugging """
+    logging.debug(f"Request method: {request.method}, Path: {request.url.path}")
+    response = await call_next(request)
+    return response
 
 @app.post("/analyze", dependencies=[Depends(authenticate)])
 async def analyze_sentiment(file: UploadFile = File(...)):

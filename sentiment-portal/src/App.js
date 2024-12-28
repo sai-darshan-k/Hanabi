@@ -13,13 +13,10 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Handle file selection
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
-    setErrorMessage(''); // Clear any previous error messages
   };
 
-  // Handle file upload
   const handleFileUpload = async () => {
     if (!file) {
       setErrorMessage('Please select a CSV file.');
@@ -40,21 +37,10 @@ function App() {
       setSentimentResults(response.data);
       setErrorMessage('');
     } catch (error) {
-      // Improved error handling
-      if (error.response) {
-        // Server responded with a status other than 200
-        setErrorMessage(`Error: ${error.response.data.detail || 'Failed to fetch sentiment analysis. Please try again.'}`);
-      } else if (error.request) {
-        // Request was made but no response received
-        setErrorMessage('Error: No response from server. Please check your connection.');
-      } else {
-        // Something else happened
-        setErrorMessage(`Error: ${error.message}`);
-      }
+      setErrorMessage('Failed to fetch sentiment analysis. Please try again.');
     }
   };
 
-  // Prepare sentiment data for the chart
   const getSentimentData = () => {
     if (!sentimentResults) return [];
     
@@ -71,7 +57,6 @@ function App() {
     ];
   };
 
-  // Chart data configuration
   const chartData = {
     labels: ['Positive', 'Negative', 'Neutral'],
     datasets: [
@@ -82,12 +67,10 @@ function App() {
     ],
   };
 
-  // Render login page if not authenticated
   if (!isAuthenticated) {
     return <LoginPage setIsAuthenticated={setIsAuthenticated} />;
   }
 
-  // Main application render
   return (
     <div className="App">
       <h1>Sentiment Analysis</h1>
@@ -129,5 +112,7 @@ function App() {
         </div>
       )}
     </div>
-);}
+  );
+}
+
 export default App;
