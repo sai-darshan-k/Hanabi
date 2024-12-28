@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: react-frontend
+    env: static
+    buildCommand: cd sentiment-portal && npm install && npm run build
+    staticPublishPath: sentiment-portal/build  # Path to the build output

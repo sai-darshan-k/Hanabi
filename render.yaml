@@ -7,10 +7,3 @@ services:
     envVars:
       - key: PORT
         value: 10000
-
-  - type: web
-    name: react-frontend
-    env: static
-    buildCommand: cd sentiment-portal && npm install && npm run build
-    startCommand: serve -s build
-    staticPublishPath: sentiment-portal/build
