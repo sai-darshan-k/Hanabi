@@ -1,8 +1,8 @@
 import logging
+import pandas as pd
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import io
 
@@ -30,12 +30,6 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
 
 # Sentiment Analysis Model
 analyzer = SentimentIntensityAnalyzer()
-
-@app.post("/login")
-async def login(credentials: HTTPBasicCredentials = Depends(security)):
-    if credentials.username != "admin" or credentials.password != "password":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return {"message": "Login successful"}
 
 @app.post("/analyze", dependencies=[Depends(authenticate)])
 async def analyze_sentiment(file: UploadFile = File(...)):
