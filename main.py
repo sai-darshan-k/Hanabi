@@ -15,10 +15,10 @@ app = FastAPI()
 # Middleware for CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins, change to specific domains in production
+    allow_origins=["https://hanabi-2.onrender.com/"],  # Use the actual production domain
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Authentication
