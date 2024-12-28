@@ -27,7 +27,7 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('https://hanabi-backend.onrender.com/analyze', formData, {
+      const response = await axios.post('http://127.0.0.1:8000/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': 'Basic ' + btoa('admin:password'), // Replace with your credentials
