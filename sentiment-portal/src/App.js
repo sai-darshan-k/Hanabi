@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axiosInstance from './axiosConfig';
+import axios from 'axios';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import LoginPage from './LoginPage';
@@ -27,7 +27,7 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await axiosInstance.post('/analyze', formData, {
+      const response = await axios.post('http://127.0.0.1:8000/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': 'Basic ' + btoa('admin:password'), // Replace with your credentials
