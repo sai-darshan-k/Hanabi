@@ -32,7 +32,7 @@ def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
 # Sentiment Analysis Model
 analyzer = SentimentIntensityAnalyzer()
 
-@app.middleware("http")
+@app.middleware("https")
 async def log_requests(request: Request, call_next):
     """ Log request method and path for debugging """
     logging.debug(f"Request method: {request.method}, Path: {request.url.path}")
