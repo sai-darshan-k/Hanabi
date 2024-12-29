@@ -15,7 +15,7 @@ app = FastAPI()
 # Middleware for CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Use the actual production domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,46 +39,104 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     return response
 
+def read_file(file: UploadFile):
+    """Utility function to read and parse different file types."""
+    try:
+        file_ext = file.filename.split('.')[-1].lower()
+        
+        if file_ext == "csv":
+            return pd.read_csv(io.StringIO(file.file.read().decode("utf-8")))
+        elif file_ext == "xlsx":
+            return pd.read_excel(file.file)
+        elif file_ext == "json":
+            return pd.read_json(io.StringIO(file.file.read().decode("utf-8")))
+        elif file_ext == "txt":
+            lines = file.file.read().decode("utf-8").splitlines()
+            return pd.DataFrame({"text": lines})
+        else:
+            raise ValueError("Unsupported file type")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to read file: {str(e)}")
+
+def get_detailed_sentiment(text):
+    """
+    Get detailed sentiment analysis with proper handling of negative values
+    """
+    # Get the full sentiment scores
+    scores = analyzer.polarity_scores(str(text))
+    
+    # Extract the compound score
+    compound = scores['compound']
+    
+    # Determine sentiment label
+    if compound > 0:
+        label = 'Positive'
+    elif compound < 0:
+        label = 'Negative'
+    else:
+        label = 'Neutral'
+    
+    # Calculate confidence (absolute value of compound score)
+    # This ensures we maintain the sign for visualization but have proper confidence
+    confidence = compound  # Keep the original signed value
+    
+    return {
+        'compound': compound,
+        'label': label,
+        'confidence': confidence,
+        'pos': scores['pos'],
+        'neg': scores['neg'],
+        'neu': scores['neu']
+    }
+
 @app.post("/analyze", dependencies=[Depends(authenticate)])
 async def analyze_sentiment(file: UploadFile = File(...)):
     try:
-        # Log the incoming file details
         logging.debug(f"Received file: {file.filename}")
         
-        # Read CSV file
-        contents = await file.read()
-        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+        df = read_file(file)
+        logging.debug(f"Data preview: {df.head()}")
 
-        # Log the first few rows of the CSV
-        logging.debug(f"CSV data: {df.head()}")
+        if 'text' not in df.columns:
+            raise HTTPException(status_code=400, detail="Input must contain a 'text' column.")
 
-        # Check if 'text' and 'timestamp' columns exist
-        if 'text' not in df.columns or 'timestamp' not in df.columns:
-            raise HTTPException(status_code=400, detail="CSV must contain 'text' and 'timestamp' columns.")
+        # Apply detailed sentiment analysis
+        sentiment_results = df['text'].apply(get_detailed_sentiment)
         
-        # Perform sentiment analysis
-        df['sentiment'] = df['text'].apply(lambda x: analyzer.polarity_scores(x)['compound'])
-        df['sentiment_label'] = df['sentiment'].apply(
-            lambda score: 'Positive' if score > 0 else 'Negative' if score < 0 else 'Neutral'
-        )
+        # Extract results into separate columns
+        df['sentiment'] = sentiment_results.apply(lambda x: x['compound'])
+        df['sentiment_label'] = sentiment_results.apply(lambda x: x['label'])
+        df['sentiment_confidence'] = sentiment_results.apply(lambda x: x['confidence'])
+        df['positive_score'] = sentiment_results.apply(lambda x: x['pos'])
+        df['negative_score'] = sentiment_results.apply(lambda x: x['neg'])
+        df['neutral_score'] = sentiment_results.apply(lambda x: x['neu'])
         
-        # Adjust sentiment confidence: if negative sentiment, make it negative
-        df['sentiment_confidence'] = df['sentiment'].apply(
-            lambda x: x if x >= 0 else -abs(x)
-        )
-        
-        # Split the timestamp into date and time
-        df['date'] = pd.to_datetime(df['timestamp']).dt.date
-        df['time'] = pd.to_datetime(df['timestamp']).dt.time
+        # Handle timestamp
+        if 'timestamp' in df.columns:
+            try:
+                df['date'] = pd.to_datetime(df['timestamp'], errors='coerce').dt.date.fillna("N/A")
+                df['time'] = pd.to_datetime(df['timestamp'], errors='coerce').dt.time.fillna("N/A")
+            except Exception as e:
+                logging.warning(f"Failed to parse timestamp: {e}")
+                df['date'] = "N/A"
+                df['time'] = "N/A"
+        else:
+            df['date'] = "N/A"
+            df['time'] = "N/A"
 
-        # Generate ID column (starting from 1)
-        df['id'] = df.index + 1  # ID starts from 1
+        # Generate ID column if not present
+        if 'id' not in df.columns:
+            df['id'] = df.index + 1
 
         # Log the sentiment analysis results
         logging.debug(f"Sentiment results: {df[['id', 'date', 'time', 'text', 'sentiment_label', 'sentiment_confidence']].head()}")
 
-        # Return results as a list of dictionaries
-        return df[['id', 'date', 'time', 'text', 'sentiment_label', 'sentiment_confidence']].to_dict(orient='records')
+        # Return results including new detailed sentiment scores
+        return df[[ 
+            'id', 'date', 'time', 'text',
+            'sentiment_label', 'sentiment_confidence',
+            'positive_score', 'negative_score', 'neutral_score'
+        ]].to_dict(orient='records')
 
     except Exception as e:
         logging.error(f"Error processing file: {e}")

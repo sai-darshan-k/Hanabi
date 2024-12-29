@@ -110,3 +110,31 @@ button:hover {
   color: red;
   margin-top: 10px;
 }
+.buttons-container {
+  margin-top: 20px;
+}
+
+.buttons-container button {
+  margin: 5px;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.buttons-container button:hover {
+  background-color: #45a049;
+}
+
+.trend-chart-container {
+  margin-top: 40px;
+  width: 80%;
+  margin: 0 auto;
+}
+
+.header-image {
+  width: 500px; /* Adjust as needed */
+  height: 50px;
+  object-fit: contain; /* Ensure the image is properly scaled */
+}
