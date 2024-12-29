@@ -30,6 +30,7 @@ function App() {
       const response = await axios.post('https://hanabi1.onrender.com/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': 'Basic ' + btoa('admin:password'), // Replace with your credentials
         },
       });
 
