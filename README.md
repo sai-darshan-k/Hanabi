@@ -27,8 +27,8 @@ This project is a **Sentiment Analysis API** built using **FastAPI**. The API pr
 - **Request**:
   ```json
   {
-    "username": "your_username",
-    "password": "your_password"
+    "username": "-",
+    "password": "-"
   }
   ```
 - **Response**:
@@ -54,7 +54,6 @@ This project is a **Sentiment Analysis API** built using **FastAPI**. The API pr
       "sentiment_label": "Positive",
       "sentiment_confidence": 0.85
     },
-    ...
   ]
   ```
 
@@ -68,8 +67,8 @@ This project is a **Sentiment Analysis API** built using **FastAPI**. The API pr
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/Hanabi.git
+   cd Hanabi
    ```
 
 2. Install dependencies:
@@ -86,7 +85,7 @@ This project is a **Sentiment Analysis API** built using **FastAPI**. The API pr
    ```
    http://127.0.0.1:8000
    ```
-
+   Or access the application hosted on Render cloud platform: https://hanabi-2.onrender.com/
 ## 🧪 Testing the API
 
 1. Use tools like **Postman** or **cURL** to test the endpoints.
@@ -113,7 +112,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## 🙌 Acknowledgments
 
 Special thanks to the creators of **FastAPI**, **VADER**, and **Pandas** for their amazing tools!
-
---- 
-
-You can copy and paste this into a file named `README.md` in your GitHub repository.
