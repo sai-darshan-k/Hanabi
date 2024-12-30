@@ -1,7 +1,3 @@
-Here’s the updated documentation with frontend setup included:
-
----
-
 # Sentiment Analysis API with FastAPI
 
 ## 📄 Overview
