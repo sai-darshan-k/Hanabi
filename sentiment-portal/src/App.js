@@ -33,7 +33,7 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('https://hanabi1.onrender.com//analyze', formData, {
+      const response = await axios.post('https://hanabi1.onrender.com/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': 'Basic ' + btoa('sai:hanabi'),
