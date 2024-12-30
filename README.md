@@ -31,8 +31,8 @@ This project is a **Sentiment Analysis API** built using **FastAPI**. The API pr
 - **Request**:
   ```json
   {
-    "username": "-",
-    "password": "-"
+    "username": "sai",
+    "password": "hanabi"
   }
   ```
 - **Response**:
