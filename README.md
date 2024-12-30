@@ -3,6 +3,7 @@
 ## 📄 Overview
 
 This project is a **Sentiment Analysis API** built using **FastAPI**. The API processes uploaded text data, performs sentiment analysis using **VADER (Valence Aware Dictionary and sEntiment Reasoner)**, and returns detailed sentiment scores and classifications.
+Application hosted on Render cloud platform: https://hanabi-2.onrender.com/
 
 ## ✨ Features
 
