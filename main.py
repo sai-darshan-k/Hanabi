@@ -76,7 +76,7 @@ def get_detailed_sentiment(text):
     else:
         label = 'Neutral'
     
-    # Calculate confidence (absolute value of compound score)
+    # calulate confidence (absolute value of compound score)
     # This ensures we maintain the sign for visualization but have proper confidence
     confidence = compound 
     
