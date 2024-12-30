@@ -7,12 +7,12 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import io
 from starlette.requests import Request
 
-# Set up logging
+#setlogging
 logging.basicConfig(level=logging.DEBUG)
 
 app = FastAPI()
 
-# Middleware for CORS
+#middleware for CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,15 +21,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Authentication
+#Authentication
 security = HTTPBasic()
 
 def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
-    if credentials.username != "admin" or credentials.password != "password":
+    if credentials.username != "sai" or credentials.password != "hanabi":
         raise HTTPException(status_code=401, detail="Unauthorized")
     return credentials.username
 
-# Sentiment Analysis Model
+#Sentiment Analysis Model
 analyzer = SentimentIntensityAnalyzer()
 
 @app.middleware("https")
@@ -78,7 +78,7 @@ def get_detailed_sentiment(text):
     
     # Calculate confidence (absolute value of compound score)
     # This ensures we maintain the sign for visualization but have proper confidence
-    confidence = compound  # Keep the original signed value
+    confidence = compound 
     
     return {
         'compound': compound,
@@ -107,9 +107,6 @@ async def analyze_sentiment(file: UploadFile = File(...)):
         df['sentiment'] = sentiment_results.apply(lambda x: x['compound'])
         df['sentiment_label'] = sentiment_results.apply(lambda x: x['label'])
         df['sentiment_confidence'] = sentiment_results.apply(lambda x: x['confidence'])
-        df['positive_score'] = sentiment_results.apply(lambda x: x['pos'])
-        df['negative_score'] = sentiment_results.apply(lambda x: x['neg'])
-        df['neutral_score'] = sentiment_results.apply(lambda x: x['neu'])
         
         # Handle timestamp
         if 'timestamp' in df.columns:
@@ -134,8 +131,7 @@ async def analyze_sentiment(file: UploadFile = File(...)):
         # Return results including new detailed sentiment scores
         return df[[ 
             'id', 'date', 'time', 'text',
-            'sentiment_label', 'sentiment_confidence',
-            'positive_score', 'negative_score', 'neutral_score'
+            'sentiment_label', 'sentiment_confidence'
         ]].to_dict(orient='records')
 
     except Exception as e:

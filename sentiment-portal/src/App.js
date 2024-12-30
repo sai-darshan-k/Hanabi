@@ -6,8 +6,7 @@ import LoginPage from './LoginPage';
 import './App.css';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
-import logo from './logo.png';  // Ensure the path is correct
-
+import logo from './logo.png';
 ChartJS.register(ArcElement, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
 function App() {
@@ -15,6 +14,7 @@ function App() {
   const [sentimentResults, setSentimentResults] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(false);
   const pieChartRef = useRef(null);
   const trendChartRef = useRef(null);
 
@@ -28,34 +28,36 @@ function App() {
       return;
     }
 
+    setLoading(true);
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const response = await axios.post('https://hanabi1.onrender.com/analyze', formData, {
+      const response = await axios.post('https://hanabi1.onrender.com//analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': 'Basic ' + btoa('admin:password'),
+          'Authorization': 'Basic ' + btoa('sai:hanabi'),
         },
       });
 
       setSentimentResults(response.data);
-      console.log("Raw sentiment results:", response.data); // Debug log
       setErrorMessage('');
     } catch (error) {
       setErrorMessage('Failed to fetch sentiment analysis. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const downloadTableAsExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(sentimentResults);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sentiment Results");
-    XLSX.writeFile(workbook, "sentiment_results.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sentiment Results');
+    XLSX.writeFile(workbook, 'sentiment_results.xlsx');
   };
 
   const downloadChartAsImage = (chartRef, filename) => {
-    html2canvas(chartRef.current.canvas).then(canvas => {
+    html2canvas(chartRef.current.canvas).then((canvas) => {
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
       link.download = filename;
@@ -65,17 +67,19 @@ function App() {
 
   const getSentimentData = () => {
     if (!sentimentResults) return [];
-    
+
     const sentimentCounts = { Positive: 0, Negative: 0, Neutral: 0 };
-    
-    sentimentResults.forEach(result => {
+
+    sentimentResults.forEach((result) => {
       sentimentCounts[result.sentiment_label]++;
     });
-    
+
+    const total = sentimentCounts.Positive + sentimentCounts.Negative + sentimentCounts.Neutral;
+
     return [
-      { label: 'Positive', value: sentimentCounts.Positive },
-      { label: 'Negative', value: sentimentCounts.Negative },
-      { label: 'Neutral', value: sentimentCounts.Neutral },
+      { label: 'Positive', value: sentimentCounts.Positive, percentage: ((sentimentCounts.Positive / total) * 100).toFixed(2) },
+      { label: 'Negative', value: sentimentCounts.Negative, percentage: ((sentimentCounts.Negative / total) * 100).toFixed(2) },
+      { label: 'Neutral', value: sentimentCounts.Neutral, percentage: ((sentimentCounts.Neutral / total) * 100).toFixed(2) },
     ];
   };
 
@@ -83,30 +87,30 @@ function App() {
     if (!sentimentResults) return { labels: [], datasets: [] };
 
     const sortedResults = [...sentimentResults].sort((a, b) => {
-      if (a.date === "N/A" || b.date === "N/A") return 0;
+      if (a.date === 'N/A' || b.date === 'N/A') return 0;
       return new Date(a.date) - new Date(b.date);
     });
 
     const dateGroups = {};
-    sortedResults.forEach(result => {
-      if (result.date === "N/A") return;
-      
+    sortedResults.forEach((result) => {
+      if (result.date === 'N/A') return;
+
       if (!dateGroups[result.date]) {
         dateGroups[result.date] = [];
       }
-      
+
       let sentimentValue = result.sentiment_confidence;
       if (result.sentiment_label === 'Negative') {
         sentimentValue = -Math.abs(result.sentiment_confidence);
       } else if (result.sentiment_label === 'Neutral') {
         sentimentValue = 0;
       }
-      
+
       dateGroups[result.date].push(sentimentValue);
     });
 
     const labels = Object.keys(dateGroups).sort();
-    const sentimentValues = labels.map(date => {
+    const sentimentValues = labels.map((date) => {
       const values = dateGroups[date];
       const average = values.reduce((sum, val) => sum + val, 0) / values.length;
       return Number(average.toFixed(4));
@@ -134,11 +138,13 @@ function App() {
   };
 
   const chartData = {
-    labels: ['Positive', 'Negative', 'Neutral'],
-    datasets: [{
-      data: getSentimentData().map(item => item.value),
-      backgroundColor: ['#4CAF50', '#F44336', '#FFC107'],
-    }],
+    labels: getSentimentData().map((item) => `${item.label} (${item.percentage}%)`),
+    datasets: [
+      {
+        data: getSentimentData().map((item) => item.value),
+        backgroundColor: ['#4CAF50', '#F44336', '#FFC107'],
+      },
+    ],
   };
 
   const trendOptions = {
@@ -212,6 +218,8 @@ function App() {
 
       <input type="file" accept=".csv" onChange={handleFileChange} />
       <button onClick={handleFileUpload}>Upload CSV</button>
+
+      {loading && <div className="loading">Analyzing data, please wait...</div>}
 
       {errorMessage && <div className="error">{errorMessage}</div>}
 
